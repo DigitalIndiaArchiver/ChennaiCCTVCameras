@@ -7,8 +7,8 @@ body {
     background-color: #f4f4f9;
 }
 header {
-    background: hsl(0, 0%, 0%);
-    color: #ff0000;
+    background: hsl(100, 100%, 100%);
+    color: hsl(0, 0%, 0%);
     padding: 1rem 0;
     text-align: center;
 }
@@ -16,7 +16,7 @@ main {
     padding: 2rem;
 }
 h1, h2 {
-    color: #eeff00;
+    color: hsl(0, 0%, 0%);
 }
 footer {
     text-align: center;
