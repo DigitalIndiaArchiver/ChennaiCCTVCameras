@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chennai CCTV Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
     <style>
         #map {
             height: 100vh;
@@ -15,6 +17,7 @@
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script>
         // Initialize the map
@@ -26,8 +29,11 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
+        // Create a marker cluster group
+        const markers = L.markerClusterGroup();
+
         // CSV file location
-        const csvFile = 'https://raw.githubusercontent.com/DigitalIndiaArchiver/ChennaiCCTVCameras/refs/heads/dev/dataset/chennai_cameras.csv';
+        const csvFile = 'assets/cctv_locations.csv';
 
         // Marker icons for different statuses
         const activeIcon = L.icon({
@@ -42,30 +48,34 @@
             iconAnchor: [12, 41]
         });
 
-        // Function to add markers to the map
-        function addMarkers(data) {
-            data.forEach(row => {
-                const { loc_name, loc_latitude, loc_longitude, loc_camstatus } = row;
-                const latitude = parseFloat(loc_latitude);
-                const longitude = parseFloat(loc_longitude);
+        // Function to add markers to the cluster group
+        function addMarker(row) {
+            const { loc_name, loc_latitude, loc_longitude, loc_camstatus } = row;
+            const latitude = parseFloat(loc_latitude);
+            const longitude = parseFloat(loc_longitude);
 
-                if (!isNaN(latitude) && !isNaN(longitude)) {
-                    const marker = L.marker([latitude, longitude], {
-                        icon: loc_camstatus === 'Active' ? activeIcon : inactiveIcon
-                    });
+            if (!isNaN(latitude) && !isNaN(longitude)) {
+                const marker = L.marker([latitude, longitude], {
+                    icon: loc_camstatus === 'Active' ? activeIcon : inactiveIcon
+                });
 
-                    marker.bindPopup(`<strong>${loc_name}</strong><br>Status: ${loc_camstatus}`);
-                    marker.addTo(map);
-                }
-            });
+                marker.bindPopup(`<strong>${loc_name}</strong><br>Status: ${loc_camstatus}`);
+                markers.addLayer(marker);
+            }
         }
+
+        // Add the marker cluster group to the map
+        map.addLayer(markers);
 
         // Parse the CSV file
         Papa.parse(csvFile, {
             download: true,
             header: true,
-            complete: function(results) {
-                addMarkers(results.data);
+            step: function(row) {
+                addMarker(row.data);
+            },
+            complete: function() {
+                console.log('All markers added');
             }
         });
     </script>
